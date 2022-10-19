@@ -10,7 +10,7 @@ func _ready():
 
 func move(target):
 	move_tween.interpolate_property(self, "position", position, target, speed, 
-							Tween.TRANS_BOUNCE, Tween.EASE_OUT)
+							Tween.EASE_IN, Tween.EASE_OUT)
 	move_tween.start()
 
 func dim():

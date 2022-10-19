@@ -1,5 +1,9 @@
 extends Node2D
 
+# State Machine
+enum {wait, move}
+var state
+
 # Grid Variables
 export (int) var width;
 export (int) var height;
@@ -27,6 +31,7 @@ var controlling = false
 
 
 func _ready():
+	state = move
 	randomize()
 	all_pieces = make_2d_array();
 	spawn_pieces()
@@ -96,6 +101,7 @@ func swap_piece(column, row, direction):
 	var first_piece = all_pieces[column][row]
 	var other_piece = all_pieces[column + direction.x][row + direction.y]
 	if first_piece != null && other_piece != null:
+		state = wait
 		all_pieces[column][row] = other_piece
 		all_pieces[column + direction.x][row+direction.y] = first_piece
 		first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
@@ -116,7 +122,8 @@ func touch_difference(grid_1, grid_2):
 			swap_piece(grid_1.x, grid_1.y, Vector2(0, -1))
 
 func _process(delta):
-	touch_input()
+	if state == move:
+		touch_input()
 	
 func find_matches():
 	for i in width:
@@ -180,6 +187,17 @@ func refill_columns():
 				piece.position = grid_to_pixel(i, j + y_offset_above)
 				piece.move(grid_to_pixel(i, j))
 				all_pieces[i][j] = piece
+	after_refill()
+				
+func after_refill():
+	for i in width:
+		for j in height:
+			if all_pieces[i][j] != null:
+				if match_at(i,j, all_pieces[i][j].color):
+					find_matches()
+					get_parent().get_node("destroy_timer").start()
+					return
+	state = move
 
 func _on_destroy_timer_timeout():
 	destroy_matched()
