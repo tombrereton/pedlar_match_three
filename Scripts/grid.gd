@@ -80,7 +80,6 @@ func is_in_grid(column, row):
 			return true;
 	return false;
 
-
 func touch_input():
 	if Input.is_action_just_pressed("ui_touch"):
 		first_touch = get_global_mouse_position()
@@ -92,15 +91,16 @@ func touch_input():
 		var grid_position = pixel_to_grid(final_touch.x, final_touch.y)
 		if is_in_grid(grid_position.x, grid_position.y) && controlling:
 			touch_difference(pixel_to_grid(first_touch.x, first_touch.y), grid_position)
-			controlling = false
-			
+		controlling = false
+
 func swap_piece(column, row, direction):
 	var first_piece = all_pieces[column][row]
 	var other_piece = all_pieces[column + direction.x][row + direction.y]
 	all_pieces[column][row] = other_piece
 	all_pieces[column + direction.x][row+direction.y] = first_piece
-	first_piece.position = grid_to_pixel(column + direction.x, row + direction.y)
-	other_piece.position = grid_to_pixel(column, row)
+	first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
+	other_piece.move(grid_to_pixel(column, row))
+	find_matches()
 
 func touch_difference(grid_1, grid_2):
 	var difference = grid_2 - grid_1
@@ -117,3 +117,28 @@ func touch_difference(grid_1, grid_2):
 
 func _process(delta):
 	touch_input()
+	
+func find_matches():
+	for i in width:
+		for j in height:
+			if all_pieces[i][j] != null:
+				var current_color = all_pieces[i][j].color
+				if i > 0 && i < width -1:
+					if all_pieces[i-1][j] != null && all_pieces[i+1][j] != null:
+						if all_pieces[i-1][j].color == current_color && all_pieces[i+1][j].color == current_color:
+							all_pieces[i-1][j].matched = true
+							all_pieces[i-1][j].dim()
+							all_pieces[i][j].matched = true
+							all_pieces[i][j].dim()
+							all_pieces[i+1][j].matched = true
+							all_pieces[i+1][j].dim()
+				if j > 0 && j < height -1:
+					if all_pieces[i][j-1] != null && all_pieces[i][j+1] != null:
+						if all_pieces[i][j-1].color == current_color && all_pieces[i][j+1].color == current_color:
+							all_pieces[i][j-1].matched = true
+							all_pieces[i][j-1].dim()
+							all_pieces[i][j].matched = true
+							all_pieces[i][j].dim()
+							all_pieces[i][j+1].matched = true
+							all_pieces[i][j+1].dim()
+
