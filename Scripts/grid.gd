@@ -14,6 +14,11 @@ export (int) var y_offset_above;
 
 # Obstacle stuff
 export (PoolVector2Array) var empty_spaces
+export (PoolVector2Array) var ice_spaces
+
+# Obstacle signals
+signal damage_ice
+signal make_ice
 
 # The piece array
 var possible_pieces = [
@@ -45,6 +50,7 @@ func _ready():
 	randomize()
 	all_pieces = make_2d_array();
 	spawn_pieces()
+	spawn_ice()
 
 func _process(delta):
 	if state == move:
@@ -79,6 +85,10 @@ func spawn_pieces():
 				add_child(piece)
 				piece.position = grid_to_pixel(i, j)
 				all_pieces[i][j] = piece
+
+func spawn_ice():
+	for i in ice_spaces.size():
+		emit_signal("make_ice", ice_spaces[i])
 
 func match_at(i, j, color):
 	if i > 1:
@@ -156,7 +166,6 @@ func touch_difference(grid_1, grid_2):
 		elif difference.y < 0:
 			swap_pieces(grid_1.x, grid_1.y, Vector2(0, -1))
 
-	
 func find_matches():
 	for i in width:
 		for j in height:
@@ -188,6 +197,7 @@ func destroy_matched():
 		for j in height:
 			if all_pieces[i][j] != null:
 				if all_pieces[i][j].matched:
+					emit_signal("damage_ice", Vector2(i,j))
 					was_matched = true
 					all_pieces[i][j].queue_free()
 					all_pieces[i][j] = null
