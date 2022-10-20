@@ -12,6 +12,8 @@ export (int) var y_start;
 export (int) var offset;
 export (int) var y_offset_above;
 
+# Obstacle stuff
+export (PoolVector2Array) var empty_spaces
 
 # The piece array
 var possible_pieces = [
@@ -48,6 +50,12 @@ func _process(delta):
 	if state == move:
 		touch_input()
 
+func restricted_movement(column, row):
+	for i in empty_spaces.size():
+		if empty_spaces[i] == Vector2(column, row):
+			return true
+	return false
+
 func make_2d_array():
 	var array = [];
 	for i in width:
@@ -59,17 +67,18 @@ func make_2d_array():
 func spawn_pieces():
 	for i in width:
 		for j in height:
-			var rand = floor(rand_range(0, possible_pieces.size()))
-			var piece = possible_pieces[rand].instance()
-			var loops = 0
-			while(match_at(i, j, piece.color) && loops < 100):
-				rand = floor(rand_range(0, possible_pieces.size()))
-				loops += 1
-				piece = possible_pieces[rand].instance()
-			
-			add_child(piece)
-			piece.position = grid_to_pixel(i, j)
-			all_pieces[i][j] = piece
+			if !restricted_movement(i, j):
+				var rand = floor(rand_range(0, possible_pieces.size()))
+				var piece = possible_pieces[rand].instance()
+				var loops = 0
+				while(match_at(i, j, piece.color) && loops < 100):
+					rand = floor(rand_range(0, possible_pieces.size()))
+					loops += 1
+					piece = possible_pieces[rand].instance()
+				
+				add_child(piece)
+				piece.position = grid_to_pixel(i, j)
+				all_pieces[i][j] = piece
 
 func match_at(i, j, color):
 	if i > 1:
@@ -191,7 +200,7 @@ func destroy_matched():
 func collapse_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null:
+			if all_pieces[i][j] == null && !restricted_movement(i, j):
 				for k in range(j + 1, height):
 					if all_pieces[i][k] != null:
 						all_pieces[i][k].move(grid_to_pixel(i, j))
@@ -203,7 +212,7 @@ func collapse_columns():
 func refill_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null:
+			if all_pieces[i][j] == null && !restricted_movement(i, j):
 				var rand = floor(rand_range(0, possible_pieces.size()))
 				var piece = possible_pieces[rand].instance()
 				var loops = 0
