@@ -56,9 +56,14 @@ func _process(delta):
 	if state == move:
 		touch_input()
 
-func restricted_fill(column, row):
-	for i in empty_spaces.size():
-		if empty_spaces[i] == Vector2(column, row):
+func restricted_fill(place):
+	if is_in_array(empty_spaces, place):
+		return true
+	return false
+
+func is_in_array(array, item):
+	for i in array.size():
+		if array[i] == item:
 			return true
 	return false
 
@@ -73,7 +78,7 @@ func make_2d_array():
 func spawn_pieces():
 	for i in width:
 		for j in height:
-			if !restricted_fill(i, j):
+			if !restricted_fill(Vector2(i, j)):
 				var rand = floor(rand_range(0, possible_pieces.size()))
 				var piece = possible_pieces[rand].instance()
 				var loops = 0
@@ -210,7 +215,7 @@ func destroy_matched():
 func collapse_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null && !restricted_fill(i, j):
+			if all_pieces[i][j] == null && !restricted_fill(Vector2(i, j)):
 				for k in range(j + 1, height):
 					if all_pieces[i][k] != null:
 						all_pieces[i][k].move(grid_to_pixel(i, j))
@@ -222,7 +227,7 @@ func collapse_columns():
 func refill_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null && !restricted_fill(i, j):
+			if all_pieces[i][j] == null && !restricted_fill(Vector2(i, j)):
 				var rand = floor(rand_range(0, possible_pieces.size()))
 				var piece = possible_pieces[rand].instance()
 				var loops = 0
