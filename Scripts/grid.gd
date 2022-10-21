@@ -177,18 +177,23 @@ func find_matches():
 			if all_pieces[i][j] != null:
 				var current_color = all_pieces[i][j].color
 				if i > 0 && i < width -1:
-					if !is_piece_null(i-1,j) && !is_piece_null(i+1,j):
-						if all_pieces[i-1][j].color == current_color && all_pieces[i+1][j].color == current_color:
+					if !is_piece_null(i-1,j) && !is_piece_null(i+1, j):
+						if does_piece_match_color(i-1, j, current_color) && does_piece_match_color(i+1, j,current_color):
 							match_and_dim(all_pieces[i-1][j])
 							match_and_dim(all_pieces[i][j])
 							match_and_dim(all_pieces[i+1][j])
 				if j > 0 && j < height -1:
 					if !is_piece_null(i,j-1) && !is_piece_null(i, j+1):
-						if all_pieces[i][j-1].color == current_color && all_pieces[i][j+1].color == current_color:
+						if does_piece_match_color(i, j-1, current_color) && does_piece_match_color(i, j+1, current_color):
 							match_and_dim(all_pieces[i][j-1])
 							match_and_dim(all_pieces[i][j])
 							match_and_dim(all_pieces[i][j+1])
 	get_parent().get_node("destroy_timer").start()
+
+func does_piece_match_color(column, row, color):
+	if all_pieces[column][row].color == color:
+		return true
+	return false
 
 func is_piece_null(column, row):
 	if all_pieces[column][row] == null:
@@ -203,7 +208,7 @@ func destroy_matched():
 	var was_matched = false
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] != null:
+			if !is_piece_null(i, j):
 				if all_pieces[i][j].matched:
 					emit_signal("damage_ice", Vector2(i,j))
 					was_matched = true
@@ -218,7 +223,7 @@ func destroy_matched():
 func collapse_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null && !restricted_fill(Vector2(i, j)):
+			if is_piece_null(i, j) && !restricted_fill(Vector2(i, j)):
 				for k in range(j + 1, height):
 					if all_pieces[i][k] != null:
 						all_pieces[i][k].move(grid_to_pixel(i, j))
@@ -230,7 +235,7 @@ func collapse_columns():
 func refill_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null && !restricted_fill(Vector2(i, j)):
+			if is_piece_null(i, j) && !restricted_fill(Vector2(i, j)):
 				var rand = floor(rand_range(0, possible_pieces.size()))
 				var piece = possible_pieces[rand].instance()
 				var loops = 0
