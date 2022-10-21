@@ -97,12 +97,12 @@ func spawn_ice():
 
 func match_at(i, j, color):
 	if i > 1:
-		if all_pieces[i-1][j] != null && all_pieces[i-2][j] != null:
-			if all_pieces[i-1][j].color == color && all_pieces[i-2][j].color == color:
+		if !is_piece_null(i-1, j) && !is_piece_null(i-2, j):
+			if does_piece_match_color(i-1, j, color) && does_piece_match_color(i-2, j, color):
 				return true
 	if j > 1:
-		if all_pieces[i][j-1] != null && all_pieces[i][j-2] != null:
-			if all_pieces[i][j-1].color == color && all_pieces[i][j-2].color == color:
+		if !is_piece_null(i, j-1) && !is_piece_null(i, j-2):
+			if does_piece_match_color(i, j-1, color) && does_piece_match_color(i, j-2, color):
 				return true
 	return false;
 
@@ -253,7 +253,7 @@ func refill_columns():
 func after_refill():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] != null:
+			if !is_piece_null(i, j):
 				if match_at(i,j, all_pieces[i][j].color):
 					find_matches()
 					get_parent().get_node("destroy_timer").start()
